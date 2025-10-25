@@ -13,7 +13,7 @@ export default function IkanBakarForm() {
                 width={400}
                 height={40}
                 alt="Ikan Bakar POS System Logo"
-                style={{ aspectRatio: '400 / 40' }}
+                style={{ aspectRatio: '500 / 50' }}
               />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-3">
