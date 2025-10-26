@@ -6,7 +6,7 @@ export default function IkanBakarForm() {
         <div className="text-center mb-10">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mx-auto max-w-3xl border border-white/20">
             {/* Horizontal Logo Container */}
-            <div className="mb-6 px-6 py-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-md">
+            <div className="mb-6 px-6 py-4 ">
               <img 
                 src="/placeholder-ad-logo.png" 
                 className="mx-auto transform hover:scale-105 transition-transform duration-300" 

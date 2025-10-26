@@ -48,7 +48,7 @@ export default function AlphaDigitalForm() {
                 <img 
                   src={button.src} 
                   alt={button.alt}
-                  className="rounded-lg w-[120px] sm:w-[130px] lg:w-[140px] h-[36px] sm:h-[38px] lg:h-[42px] object-cover"
+                  className="rounded-lg w-[170px] sm:w-[160px] lg:w-[160px] h-[36px] sm:h-[38px] lg:h-[42px] object-cover"
                 />
               </a>
             ))}
