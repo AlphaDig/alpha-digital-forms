@@ -4,24 +4,12 @@ export default function TurnstileSystemPage() {
       <div className="max-w-5xl mx-auto px-4">
         {/* Header Logo */}
         <div className="text-center mb-10">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/20">
             <img 
               src="/placeholder-ad-logo.png" 
               alt="Turnstile Control Solutions"
               className="mx-auto transform hover:scale-105 transition-transform duration-300"
               style={{ height: '35px', width: '450px', maxWidth: '100%' }}
             />
-          {/* Footer Logo */}
-          <div className="text-center mt-12">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 inline-block border border-white/20">
-              <img 
-                src="/placeholder-ad-logo.png" 
-                alt="Alpha Digital"
-                className="mx-auto transform hover:scale-105 transition-transform duration-300"
-                style={{ height: '30px', width: '350px', maxWidth: '100%' }}
-              />
-            </div>
-          </div>
         </div>
 
         {/* Main Header */}
