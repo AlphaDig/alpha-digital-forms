@@ -11,6 +11,16 @@ export default function TurnstileSystemPage() {
               className="mx-auto transform hover:scale-105 transition-transform duration-300"
               style={{ height: '35px', width: '450px', maxWidth: '100%' }}
             />
+          {/* Footer Logo */}
+          <div className="text-center mt-12">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 inline-block border border-white/20">
+              <img 
+                src="/placeholder-ad-logo.png" 
+                alt="Alpha Digital"
+                className="mx-auto transform hover:scale-105 transition-transform duration-300"
+                style={{ height: '30px', width: '350px', maxWidth: '100%' }}
+              />
+            </div>
           </div>
         </div>
 
