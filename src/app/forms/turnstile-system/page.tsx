@@ -1,4 +1,10 @@
+'use client'
+import { useEffect } from "react";
+
 export default function TurnstileSystemPage() {
+  useEffect(() => {
+    document.title = "Turnstile System";
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 py-8">
       <div className="max-w-5xl mx-auto px-4">
