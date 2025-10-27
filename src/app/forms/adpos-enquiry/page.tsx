@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function EnquiryPage() {
   const [formData, setFormData] = useState({
@@ -14,11 +14,41 @@ export default function EnquiryPage() {
     remark: "",
   });
 
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+
+  // Load reCAPTCHA script
+  useEffect(() => {
+    const loadReCaptcha = () => {
+      if (document.querySelector('script[src*="recaptcha"]')) return;
+
+      const script = document.createElement("script");
+      script.src = `https://www.google.com/recaptcha/api.js?render=6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+
+      script.onload = () => {
+        console.log("reCAPTCHA loaded successfully");
+      };
+    };
+
+    loadReCaptcha();
+  }, []);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setSubmitError(null); // Clear error when user types
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,15 +63,179 @@ export default function EnquiryPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, file: e.target.files![0] }));
+      const file = e.target.files[0];
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB");
+        return;
+      }
+      setFormData((prev) => ({ ...prev, file }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Camera functions
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "environment",
+        },
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        setStream(mediaStream);
+        setIsCameraActive(true);
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      alert("Unable to access camera. Please check permissions and try again.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+      setIsCameraActive(false);
+    }
+  };
+
+  const takePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext("2d");
+      if (context) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+
+        // Convert canvas to blob and create file
+        canvasRef.current.toBlob(
+          (blob) => {
+            if (blob) {
+              const file = new File([blob], `photo-${Date.now()}.jpg`, {
+                type: "image/jpeg",
+              });
+              setFormData((prev) => ({ ...prev, file }));
+              stopCamera();
+            }
+          },
+          "image/jpeg",
+          0.8
+        );
+      }
+    }
+  };
+
+  // reCAPTCHA functions
+  const executeRecaptcha = async (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(() => {
+          window.grecaptcha
+            .execute("6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n", {
+              action: "enquiry_form",
+            })
+            .then((token: string) => {
+              resolve(token);
+            })
+            .catch((error: any) => {
+              reject(error);
+            });
+        });
+      } else {
+        reject(new Error("reCAPTCHA not loaded"));
+      }
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    alert("Thank you for your enquiry! We will get back to you soon.");
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Basic validation
+      if (!formData.name.trim() || !formData.company.trim()) {
+        throw new Error("Name and Company are required fields");
+      }
+
+      // Generate reCAPTCHA token
+      const token = await executeRecaptcha();
+      setCaptchaToken(token);
+
+      // Create FormData object
+      const submitData = new FormData();
+      submitData.append("name", formData.name.trim());
+      submitData.append("company", formData.company.trim());
+      submitData.append("telephone", formData.telephone.trim());
+      submitData.append("email", formData.email.trim());
+      submitData.append("remark", formData.remark.trim());
+      submitData.append("captchaToken", token);
+
+      // Add interests
+      formData.interested.forEach((interest) => {
+        submitData.append("interested", interest);
+      });
+
+      if (formData.otherInterested) {
+        submitData.append("otherInterested", formData.otherInterested.trim());
+      }
+
+      // Add file if exists
+      if (formData.file) {
+        submitData.append("file", formData.file);
+      }
+
+      console.log("Submitting to API...");
+
+      // Use the correct API endpoint
+      const response = await fetch("/api/submit-enquiry", {
+        method: "POST",
+        body: submitData,
+      });
+
+      const result = await response.json();
+      console.log("API Response:", result);
+
+      if (!response.ok) {
+        throw new Error(result.message || `Server error: ${response.status}`);
+      }
+
+      if (!result.success) {
+        throw new Error(result.message || "Submission failed");
+      }
+
+      // Success - reset form
+      setFormData({
+        name: "",
+        company: "",
+        telephone: "",
+        email: "",
+        interested: [],
+        otherInterested: "",
+        file: null,
+        remark: "",
+      });
+      setCaptchaToken(null);
+
+      alert("Thank you for your enquiry! We will get back to you soon.");
+    } catch (error) {
+      console.error("Submission error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit enquiry. Please try again.";
+      setSubmitError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,7 +249,7 @@ export default function EnquiryPage() {
               <img
                 src="/placeholder-adlogo.png"
                 alt="ADPOS Logo"
-                style={{ width: '200px', height: '86px' }}
+                style={{ width: "200px", height: "86px" }}
                 className="object-contain"
               />
             </div>
@@ -73,6 +267,13 @@ export default function EnquiryPage() {
                   Please fill in your details and we'll get back to you shortly
                 </p>
               </div>
+
+              {/* Error Message */}
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-800 text-sm">{submitError}</p>
+                </div>
+              )}
 
               {/* Name Field */}
               <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -250,25 +451,29 @@ export default function EnquiryPage() {
                   File Upload
                 </label>
                 <div className="flex-1">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={handleFileClick}
+                  >
                     <input
                       type="file"
                       id="file"
                       name="file"
+                      ref={fileInputRef}
                       onChange={handleFileChange}
                       className="hidden"
+                      accept="image/*,.pdf,.doc,.docx"
                     />
-                    <label
-                      htmlFor="file"
-                      className="cursor-pointer block"
-                    >
+                    <div className="cursor-pointer block">
                       <p className="text-gray-600 mb-2">
-                        Click to upload files or drag and drop
+                        {formData.file
+                          ? formData.file.name
+                          : "Click to upload files or drag and drop"}
                       </p>
                       <p className="text-sm text-gray-500">
                         Maximum file size: 10MB
                       </p>
-                    </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -279,16 +484,47 @@ export default function EnquiryPage() {
                   Take Photo
                 </label>
                 <div className="flex-1">
-                  <div className="border border-gray-300 rounded-lg p-6 text-center bg-gray-50">
-                    <p className="text-gray-600 mb-3 text-sm">
-                      Camera functionality would be implemented here
-                    </p>
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    >
-                      Take Photo
-                    </button>
+                  <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
+                    {!isCameraActive ? (
+                      <div className="text-center">
+                        <p className="text-gray-600 mb-3 text-sm">
+                          Take a photo using your camera
+                        </p>
+                        <button
+                          type="button"
+                          onClick={startCamera}
+                          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          Start Camera
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          className="w-full rounded-lg bg-black"
+                        />
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            type="button"
+                            onClick={takePhoto}
+                            className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          >
+                            Take Photo
+                          </button>
+                          <button
+                            type="button"
+                            onClick={stopCamera}
+                            className="px-4 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <canvas ref={canvasRef} className="hidden" />
                   </div>
                 </div>
               </div>
@@ -314,20 +550,30 @@ export default function EnquiryPage() {
                 </div>
               </div>
 
-              {/* Captcha */}
+              {/* reCAPTCHA Notice */}
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <label className="w-full sm:w-40 font-medium text-gray-700 text-sm pt-2">
-                  Please verify that you are human{" "}
-                  <span className="text-red-500">*</span>
+                  Security Verification
                 </label>
                 <div className="flex-1">
-                  <div
-                    className="bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center p-6"
-                    style={{ maxWidth: "300px" }}
-                  >
-                    <span className="text-gray-600 text-sm">
-                      CAPTCHA verification will be implemented here
-                    </span>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-800 text-sm">
+                      This site is protected by reCAPTCHA and the Google
+                      <a
+                        href="https://policies.google.com/privacy"
+                        className="underline ml-1"
+                      >
+                        Privacy Policy
+                      </a>{" "}
+                      and
+                      <a
+                        href="https://policies.google.com/terms"
+                        className="underline ml-1"
+                      >
+                        Terms of Service
+                      </a>{" "}
+                      apply.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -336,9 +582,10 @@ export default function EnquiryPage() {
               <div className="flex justify-center pt-6">
                 <button
                   type="submit"
-                  className="px-12 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  disabled={isSubmitting}
+                  className="px-12 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  Submit Enquiry
+                  {isSubmitting ? "Submitting..." : "Submit Enquiry"}
                 </button>
               </div>
             </form>
@@ -351,9 +598,7 @@ export default function EnquiryPage() {
                 <div className="bg-white px-3 py-2 rounded text-gray-800 text-sm font-bold mr-3">
                   AD
                 </div>
-                <span className="text-sm">
-                  Powered by Alpha Digital POS
-                </span>
+                <span className="text-sm">Powered by Alpha Digital POS</span>
               </div>
               <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
                 Create Your Solution
