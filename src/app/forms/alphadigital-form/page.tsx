@@ -1,4 +1,11 @@
+'use client'
+import { useEffect } from "react";
+
 export default function AlphaDigitalForm() {
+
+  useEffect(() => {
+    document.title = "About";
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-6 lg:py-8 px-3 sm:px-4">
       <div className="max-w-6xl mx-auto">

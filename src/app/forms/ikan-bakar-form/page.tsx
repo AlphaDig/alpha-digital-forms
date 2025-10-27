@@ -1,4 +1,10 @@
+'use client'
+import { useEffect } from "react";
+
 export default function IkanBakarForm() {
+  useEffect(() => {
+    document.title = "Ikan Bakar Restaurant POS System";
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 py-8">
       <div className="max-w-5xl mx-auto px-4">

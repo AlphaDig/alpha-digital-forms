@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
     // Send email
     const { data, error } = await resend.emails.send({
       from: 'ADPOS Enquiry <onboarding@resend.dev>', // Replace with your verified domain
-      to: process.env.COMPANY_EMAIL || 'alphadigital@yahoo.com', // Your company email
+      to: process.env.COMPANY_EMAIL || 'eseswaran48@gmail.com', // Your company email
       subject: `New ADPOS Enquiry - ${name} from ${company}`,
       html: emailHtml,
       attachments: attachments

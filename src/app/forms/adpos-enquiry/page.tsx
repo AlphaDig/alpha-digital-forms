@@ -18,12 +18,18 @@ export default function EnquiryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCaptchaReady, setIsCaptchaReady] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Enquiry";
+  }, []);
 
   // Simple reCAPTCHA implementation
   useEffect(() => {
@@ -205,7 +211,7 @@ export default function EnquiryPage() {
         throw new Error(result.message || "Submission failed");
       }
 
-      // Success - reset form
+      // Success - reset form and show popup
       setFormData({
         name: "",
         company: "",
@@ -217,8 +223,8 @@ export default function EnquiryPage() {
         remark: "",
       });
       setCaptchaToken(null);
+      setShowSuccessPopup(true);
 
-      alert("Thank you for your enquiry! We will get back to you soon.");
     } catch (error) {
       console.error("Submission error:", error);
       const errorMessage =
@@ -231,8 +237,50 @@ export default function EnquiryPage() {
     }
   };
 
+  // Close success popup after 5 seconds automatically
+  useEffect(() => {
+    if (showSuccessPopup) {
+      const timer = setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessPopup]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-auto transform animate-scale-in">
+            <div className="text-center">
+              {/* Success Icon */}
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              
+              {/* Success Message */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                Success!
+              </h3>
+              <p className="text-gray-600 mb-6 text-lg">
+                Your enquiry has been submitted successfully. We will get back to you soon.
+              </p>
+              
+              {/* Close Button */}
+              <button
+                onClick={() => setShowSuccessPopup(false)}
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-3xl mx-auto px-4">
         {/* Centered Container */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -467,57 +515,6 @@ export default function EnquiryPage() {
                         Maximum file size: 10MB
                       </p>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Take Photo */}
-              <div className="flex flex-col sm:flex-row items-start gap-4">
-                <label className="w-full sm:w-40 font-medium text-gray-700 text-sm pt-2">
-                  Take Photo
-                </label>
-                <div className="flex-1">
-                  <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
-                    {!isCameraActive ? (
-                      <div className="text-center">
-                        <p className="text-gray-800 mb-3 text-sm">
-                          Take a photo using your camera
-                        </p>
-                        <button
-                          type="button"
-                          onClick={startCamera}
-                          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          Start Camera
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          className="w-full rounded-lg bg-black"
-                        />
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            type="button"
-                            onClick={takePhoto}
-                            className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                          >
-                            Take Photo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={stopCamera}
-                            className="px-4 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    <canvas ref={canvasRef} className="hidden" />
                   </div>
                 </div>
               </div>

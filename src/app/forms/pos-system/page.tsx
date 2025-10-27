@@ -1,4 +1,12 @@
+'use client'
+
+import { useEffect } from "react";
+
 export default function POSSystemPage() {
+
+  useEffect(() => {
+    document.title = "POS System";
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-6 sm:py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
