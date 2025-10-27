@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendEmail } from '@/utils/emailService';
+import { Resend } from 'resend';
 
-function generateEnquiryEmail(data: any) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+function generateEnquiryEmail(data: any, attachments: any[] = []) {
   const {
     name,
     company,
     telephone,
     email,
     interested = [],
-    remark,
-    requestUs = []
+    otherInterested,
+    remark
   } = data;
 
   const interestedList = Array.isArray(interested) ? interested : [interested];
-  const requestUsList = Array.isArray(requestUs) ? requestUs : [requestUs];
+  
+  // Add other interested if specified
+  const allInterests = otherInterested 
+    ? [...interestedList, `Other: ${otherInterested}`]
+    : interestedList;
 
   return `
 <!DOCTYPE html>
@@ -104,6 +110,13 @@ function generateEnquiryEmail(data: any) {
         .list-item:last-child {
             border-bottom: none;
         }
+        .attachments {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+        }
         .footer {
             background: #f8fafc;
             padding: 20px;
@@ -125,7 +138,7 @@ function generateEnquiryEmail(data: any) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>NEW ENQUIRY RECEIVED</h1>
+            <h1>NEW ADPOS ENQUIRY RECEIVED</h1>
         </div>
         
         <div class="content">
@@ -155,32 +168,35 @@ function generateEnquiryEmail(data: any) {
             <!-- Interested In -->
             <div class="section">
                 <div class="section-title">Interested In</div>
-                ${interestedList.length > 0 ? `
+                ${allInterests.length > 0 ? `
                     <div class="list">
-                        ${interestedList.map((item: string) => `
-                            <div class="list-item">${item}</div>
+                        ${allInterests.map((item: string) => `
+                            <div class="list-item">• ${item}</div>
                         `).join('')}
                     </div>
                 ` : '<div class="info-value">No specific interests selected</div>'}
             </div>
-
-            <!-- Requested Actions -->
-            ${requestUsList.length > 0 ? `
-            <div class="section">
-                <div class="section-title">Requested Actions</div>
-                <div class="list">
-                    ${requestUsList.map((item: string) => `
-                        <div class="list-item">${item}</div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
 
             <!-- Remarks -->
             ${remark ? `
             <div class="section">
                 <div class="section-title">Remarks</div>
                 <div class="info-value" style="white-space: pre-wrap;">${remark}</div>
+            </div>
+            ` : ''}
+
+            <!-- Attachments -->
+            ${attachments.length > 0 ? `
+            <div class="section">
+                <div class="section-title">Attachments</div>
+                <div class="attachments">
+                    <p><strong>Files attached:</strong> ${attachments.length} file(s)</p>
+                    <ul>
+                        ${attachments.map((file: any) => `
+                            <li>${file.filename} (${(file.content.length / 1024).toFixed(1)} KB)</li>
+                        `).join('')}
+                    </ul>
+                </div>
             </div>
             ` : ''}
 
@@ -194,15 +210,15 @@ function generateEnquiryEmail(data: any) {
                     </div>
                     <div class="info-item">
                         <div class="info-label">Source</div>
-                        <div class="info-value">Alpha Digital Enquiry Form</div>
+                        <div class="info-value">ADPOS Enquiry Form</div>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>This enquiry was submitted through Alpha Digital Company's enquiry form.</p>
-            <p>© ${new Date().getFullYear()} Alpha Digital Company. All rights reserved.</p>
+            <p>This enquiry was submitted through Alpha Digital ADPOS enquiry form.</p>
+            <p>© ${new Date().getFullYear()} Alpha Digital. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -212,31 +228,88 @@ function generateEnquiryEmail(data: any) {
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
+    const formData = await request.formData();
+    
+    // Extract form fields
+    const name = formData.get('name') as string;
+    const company = formData.get('company') as string;
+    const telephone = formData.get('telephone') as string;
+    const email = formData.get('email') as string;
+    const interested = formData.getAll('interested') as string[];
+    const otherInterested = formData.get('otherInterested') as string;
+    const remark = formData.get('remark') as string;
+    const file = formData.get('file') as File;
+    const captchaToken = formData.get('captchaToken') as string;
 
     console.log('Enquiry Data Received:', {
-      name: data.name,
-      company: data.company,
-      hasInterests: !!data.interested,
-      hasRequests: !!data.requestUs
+      name,
+      company,
+      email,
+      interested: interested.length,
+      hasFile: !!file
     });
+
+    // Verify reCAPTCHA token (optional but recommended)
+    if (captchaToken) {
+      const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`
+      });
+      
+      const recaptchaData = await recaptchaResponse.json();
+      
+      if (!recaptchaData.success) {
+        return NextResponse.json(
+          { success: false, message: 'reCAPTCHA verification failed' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
       throw new Error('RESEND_API_KEY is not configured');
     }
 
-    // Generate email content
-    const emailHtml = generateEnquiryEmail(data);
+    // Prepare attachments
+    const attachments = [];
+    if (file && file.size > 0) {
+      const buffer = await file.arrayBuffer();
+      attachments.push({
+        filename: file.name,
+        content: Buffer.from(buffer)
+      });
+    }
 
-    // Send email to company
-    await sendEmail({
-      to: process.env.COMPANY_EMAIL!,
-      subject: `New Enquiry - ${data.name || 'Unknown Customer'}`,
+    // Generate email content
+    const emailHtml = generateEnquiryEmail({
+      name,
+      company,
+      telephone,
+      email,
+      interested,
+      otherInterested,
+      remark
+    }, attachments);
+
+    // Send email
+    const { data, error } = await resend.emails.send({
+      from: 'ADPOS Enquiry <noreply@yourdomain.com>', // Replace with your verified domain
+      to: process.env.COMPANY_EMAIL || 'alphadigital@yahoo.com', // Your company email
+      subject: `New ADPOS Enquiry - ${name} from ${company}`,
       html: emailHtml,
+      attachments: attachments
     });
 
-    console.log('Enquiry email sent successfully');
+    if (error) {
+      console.error('Resend error:', error);
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+
+    console.log('Enquiry email sent successfully:', data);
 
     return NextResponse.json({ 
       success: true, 
