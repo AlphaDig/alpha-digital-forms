@@ -284,7 +284,7 @@ export default function EnquiryPage() {
                     required
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -306,7 +306,7 @@ export default function EnquiryPage() {
                     required
                     value={formData.company}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
                     placeholder="Enter your company name"
                   />
                 </div>
@@ -327,7 +327,7 @@ export default function EnquiryPage() {
                     name="telephone"
                     value={formData.telephone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -348,7 +348,7 @@ export default function EnquiryPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
                     placeholder="example@company.com"
                   />
                 </div>
@@ -379,7 +379,7 @@ export default function EnquiryPage() {
                           />
                           <label
                             htmlFor={`interested-${option}`}
-                            className="ml-3 text-gray-700 text-sm"
+                            className="ml-3 text-gray-900 text-sm"
                           >
                             {option}
                           </label>
@@ -413,7 +413,7 @@ export default function EnquiryPage() {
                       />
                       <label
                         htmlFor="interested-other"
-                        className="ml-3 text-gray-700 text-sm mr-4"
+                        className="ml-3 text-gray-900 text-sm mr-4"
                       >
                         Other
                       </label>
@@ -428,7 +428,7 @@ export default function EnquiryPage() {
                           }))
                         }
                         disabled={!formData.interested.includes("other")}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm disabled:bg-gray-100 disabled:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm disabled:bg-gray-100 disabled:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-black placeholder-gray-500"
                       />
                     </div>
                   </div>
@@ -458,12 +458,12 @@ export default function EnquiryPage() {
                       accept="image/*,.pdf,.doc,.docx"
                     />
                     <div className="cursor-pointer block">
-                      <p className="text-gray-600 mb-2">
+                      <p className="text-gray-800 mb-2">
                         {formData.file
                           ? formData.file.name
                           : "Click to upload files or drag and drop"}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-600">
                         Maximum file size: 10MB
                       </p>
                     </div>
@@ -480,7 +480,7 @@ export default function EnquiryPage() {
                   <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
                     {!isCameraActive ? (
                       <div className="text-center">
-                        <p className="text-gray-600 mb-3 text-sm">
+                        <p className="text-gray-800 mb-3 text-sm">
                           Take a photo using your camera
                         </p>
                         <button
@@ -537,7 +537,7 @@ export default function EnquiryPage() {
                     value={formData.remark}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black placeholder-gray-500"
                     placeholder="Any additional comments or requirements..."
                   />
                 </div>
@@ -554,7 +554,7 @@ export default function EnquiryPage() {
                       <div className="text-center py-4">
                         <div className="flex items-center justify-center space-x-2">
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          <span className="text-gray-600 text-sm">Loading security check...</span>
+                          <span className="text-gray-800 text-sm">Loading security check...</span>
                         </div>
                       </div>
                     ) : (
@@ -573,7 +573,7 @@ export default function EnquiryPage() {
                         )}
                       </>
                     )}
-                    <p className="text-gray-600 text-xs mt-3 text-center">
+                    <p className="text-gray-800 text-xs mt-3 text-center">
                       This site is protected by reCAPTCHA and the Google
                       <a
                         href="https://policies.google.com/privacy"
