@@ -17,59 +17,47 @@ export default function EnquiryPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isCaptchaLoaded, setIsCaptchaLoaded] = useState(false);
+  const [isCaptchaReady, setIsCaptchaReady] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const captchaRef = useRef<HTMLDivElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Load reCAPTCHA v2 script
+  // Simple reCAPTCHA implementation
   useEffect(() => {
-    const loadReCaptcha = () => {
-      if (document.querySelector('script[src*="recaptcha"]')) return;
-
-      const script = document.createElement("script");
-      script.src = `https://www.google.com/recaptcha/api.js`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-
-      script.onload = () => {
-        console.log("reCAPTCHA v2 loaded successfully");
-        setIsCaptchaLoaded(true);
-        
-        // Initialize reCAPTCHA after a short delay to ensure it's ready
-        setTimeout(() => {
-          if (window.grecaptcha && captchaRef.current) {
-            window.grecaptcha.render(captchaRef.current, {
-              sitekey: "6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n",
-              callback: (token: string) => {
-                console.log("reCAPTCHA token received:", token);
-                setCaptchaToken(token);
-              },
-              "expired-callback": () => {
-                console.log("reCAPTCHA expired");
-                setCaptchaToken(null);
-              },
-              "error-callback": () => {
-                console.log("reCAPTCHA error");
-                setCaptchaToken(null);
-              },
-            });
-          }
-        }, 1000);
-      };
-
-      script.onerror = () => {
-        console.error("Failed to load reCAPTCHA");
-        setIsCaptchaLoaded(false);
-      };
+    // Add global callback functions
+    (window as any).onRecaptchaSuccess = (token: string) => {
+      console.log("reCAPTCHA success:", token);
+      setCaptchaToken(token);
     };
 
-    loadReCaptcha();
+    (window as any).onRecaptchaExpired = () => {
+      console.log("reCAPTCHA expired");
+      setCaptchaToken(null);
+    };
+
+    (window as any).onRecaptchaError = () => {
+      console.log("reCAPTCHA error");
+      setCaptchaToken(null);
+    };
+
+    // Load reCAPTCHA script
+    const script = document.createElement("script");
+    script.src = "https://www.google.com/recaptcha/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      console.log("reCAPTCHA script loaded");
+      setIsCaptchaReady(true);
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      document.head.removeChild(script);
+    };
   }, []);
 
   const handleInputChange = (
@@ -217,7 +205,7 @@ export default function EnquiryPage() {
         throw new Error(result.message || "Submission failed");
       }
 
-      // Success - reset form and reCAPTCHA
+      // Success - reset form
       setFormData({
         name: "",
         company: "",
@@ -229,11 +217,6 @@ export default function EnquiryPage() {
         remark: "",
       });
       setCaptchaToken(null);
-      
-      // Reset reCAPTCHA
-      if (window.grecaptcha) {
-        window.grecaptcha.reset();
-      }
 
       alert("Thank you for your enquiry! We will get back to you soon.");
     } catch (error) {
@@ -567,14 +550,28 @@ export default function EnquiryPage() {
                 </label>
                 <div className="flex-1">
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    {!isCaptchaLoaded ? (
+                    {!isCaptchaReady ? (
                       <div className="text-center py-4">
-                        <p className="text-gray-600 text-sm">
-                          Loading security check...
-                        </p>
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-gray-600 text-sm">Loading security check...</span>
+                        </div>
                       </div>
                     ) : (
-                      <div ref={captchaRef} className="flex justify-center"></div>
+                      <>
+                        <div
+                          className="g-recaptcha"
+                          data-sitekey="6LdiYPgrAAAAAOdijG7UMFO-3KwFNBpOJOjw6vG1"
+                          data-callback="onRecaptchaSuccess"
+                          data-expired-callback="onRecaptchaExpired"
+                          data-error-callback="onRecaptchaError"
+                        ></div>
+                        {captchaToken && (
+                          <div className="mt-2 text-green-600 text-sm text-center">
+                            ✓ Verification completed - Submit button is now enabled
+                          </div>
+                        )}
+                      </>
                     )}
                     <p className="text-gray-600 text-xs mt-3 text-center">
                       This site is protected by reCAPTCHA and the Google

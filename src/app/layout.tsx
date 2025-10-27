@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* ✅ Wrap the entire app with reCAPTCHA provider */}
-        <ReCaptchaProviderWrapper>{children}</ReCaptchaProviderWrapper>
+        {children}
 
       </body>
     </html>
