@@ -17,26 +17,55 @@ export default function EnquiryPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isCaptchaLoaded, setIsCaptchaLoaded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const captchaRef = useRef<HTMLDivElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Load reCAPTCHA script
+  // Load reCAPTCHA v2 script
   useEffect(() => {
     const loadReCaptcha = () => {
       if (document.querySelector('script[src*="recaptcha"]')) return;
 
       const script = document.createElement("script");
-      script.src = `https://www.google.com/recaptcha/api.js?render=6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n`;
+      script.src = `https://www.google.com/recaptcha/api.js`;
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
 
       script.onload = () => {
-        console.log("reCAPTCHA loaded successfully");
+        console.log("reCAPTCHA v2 loaded successfully");
+        setIsCaptchaLoaded(true);
+        
+        // Initialize reCAPTCHA after a short delay to ensure it's ready
+        setTimeout(() => {
+          if (window.grecaptcha && captchaRef.current) {
+            window.grecaptcha.render(captchaRef.current, {
+              sitekey: "6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n",
+              callback: (token: string) => {
+                console.log("reCAPTCHA token received:", token);
+                setCaptchaToken(token);
+              },
+              "expired-callback": () => {
+                console.log("reCAPTCHA expired");
+                setCaptchaToken(null);
+              },
+              "error-callback": () => {
+                console.log("reCAPTCHA error");
+                setCaptchaToken(null);
+              },
+            });
+          }
+        }, 1000);
+      };
+
+      script.onerror = () => {
+        console.error("Failed to load reCAPTCHA");
+        setIsCaptchaLoaded(false);
       };
     };
 
@@ -48,7 +77,7 @@ export default function EnquiryPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setSubmitError(null); // Clear error when user types
+    setSubmitError(null);
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +93,6 @@ export default function EnquiryPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // Check file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
         alert("File size must be less than 10MB");
         return;
@@ -115,7 +143,6 @@ export default function EnquiryPage() {
         canvasRef.current.height = videoRef.current.videoHeight;
         context.drawImage(videoRef.current, 0, 0);
 
-        // Convert canvas to blob and create file
         canvasRef.current.toBlob(
           (blob) => {
             if (blob) {
@@ -132,41 +159,6 @@ export default function EnquiryPage() {
       }
     }
   };
-// reCAPTCHA functions
-const executeRecaptcha = async (): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    // Check if reCAPTCHA is available
-    if (typeof window === 'undefined') {
-      reject(new Error('reCAPTCHA not available in server environment'));
-      return;
-    }
-
-    if (!window.grecaptcha) {
-      reject(new Error('reCAPTCHA not loaded. Please refresh the page and try again.'));
-      return;
-    }
-
-    try {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha
-          .execute('6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n', {
-            action: 'enquiry_form',
-          })
-          .then((token: string) => {
-            console.log('reCAPTCHA token generated successfully');
-            resolve(token);
-          })
-          .catch((error: any) => {
-            console.error('reCAPTCHA execution error:', error);
-            reject(new Error('Failed to generate security token. Please try again.'));
-          });
-      });
-    } catch (error) {
-      console.error('reCAPTCHA ready error:', error);
-      reject(new Error('Security verification failed. Please refresh the page.'));
-    }
-  });
-};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,9 +171,10 @@ const executeRecaptcha = async (): Promise<string> => {
         throw new Error("Name and Company are required fields");
       }
 
-      // Generate reCAPTCHA token
-      const token = await executeRecaptcha();
-      setCaptchaToken(token);
+      // Check if reCAPTCHA is completed
+      if (!captchaToken) {
+        throw new Error("Please complete the reCAPTCHA verification");
+      }
 
       // Create FormData object
       const submitData = new FormData();
@@ -190,7 +183,7 @@ const executeRecaptcha = async (): Promise<string> => {
       submitData.append("telephone", formData.telephone.trim());
       submitData.append("email", formData.email.trim());
       submitData.append("remark", formData.remark.trim());
-      submitData.append("captchaToken", token);
+      submitData.append("captchaToken", captchaToken);
 
       // Add interests
       formData.interested.forEach((interest) => {
@@ -208,7 +201,6 @@ const executeRecaptcha = async (): Promise<string> => {
 
       console.log("Submitting to API...");
 
-      // Use the correct API endpoint
       const response = await fetch("/api/submit-enquiry", {
         method: "POST",
         body: submitData,
@@ -225,7 +217,7 @@ const executeRecaptcha = async (): Promise<string> => {
         throw new Error(result.message || "Submission failed");
       }
 
-      // Success - reset form
+      // Success - reset form and reCAPTCHA
       setFormData({
         name: "",
         company: "",
@@ -237,6 +229,11 @@ const executeRecaptcha = async (): Promise<string> => {
         remark: "",
       });
       setCaptchaToken(null);
+      
+      // Reset reCAPTCHA
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
 
       alert("Thank you for your enquiry! We will get back to you soon.");
     } catch (error) {
@@ -563,28 +560,41 @@ const executeRecaptcha = async (): Promise<string> => {
                 </div>
               </div>
 
-              {/* reCAPTCHA Notice */}
+              {/* reCAPTCHA v2 Checkbox */}
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <label className="w-full sm:w-40 font-medium text-gray-700 text-sm pt-2">
-                  Security Verification
+                  Security Check <span className="text-red-500">*</span>
                 </label>
                 <div className="flex-1">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-blue-800 text-sm">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    {!isCaptchaLoaded ? (
+                      <div className="text-center py-4">
+                        <p className="text-gray-600 text-sm">
+                          Loading security check...
+                        </p>
+                      </div>
+                    ) : (
+                      <div ref={captchaRef} className="flex justify-center"></div>
+                    )}
+                    <p className="text-gray-600 text-xs mt-3 text-center">
                       This site is protected by reCAPTCHA and the Google
                       <a
                         href="https://policies.google.com/privacy"
-                        className="underline ml-1"
+                        className="underline mx-1"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         Privacy Policy
-                      </a>{" "}
+                      </a>
                       and
                       <a
                         href="https://policies.google.com/terms"
                         className="underline ml-1"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         Terms of Service
-                      </a>{" "}
+                      </a>
                       apply.
                     </p>
                   </div>
@@ -595,7 +605,7 @@ const executeRecaptcha = async (): Promise<string> => {
               <div className="flex justify-center pt-6">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !captchaToken}
                   className="px-12 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Enquiry"}

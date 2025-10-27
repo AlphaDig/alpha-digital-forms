@@ -1,6 +1,7 @@
 "use client";
 
-import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import React from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function ReCaptchaProviderWrapper({
   children,
@@ -8,10 +9,17 @@ export default function ReCaptchaProviderWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <GoogleReCaptchaProvider
-      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-    >
+    <>
       {children}
-    </GoogleReCaptchaProvider>
+      {/* ✅ This will render the reCAPTCHA v2 widget */}
+      <div className="recaptcha-container">
+        <ReCAPTCHA
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+          onChange={(token) => {
+            console.log("ReCAPTCHA token:", token);
+          }}
+        />
+      </div>
+    </>
   );
 }
