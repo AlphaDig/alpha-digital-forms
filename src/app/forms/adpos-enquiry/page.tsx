@@ -132,28 +132,41 @@ export default function EnquiryPage() {
       }
     }
   };
+// reCAPTCHA functions
+const executeRecaptcha = async (): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    // Check if reCAPTCHA is available
+    if (typeof window === 'undefined') {
+      reject(new Error('reCAPTCHA not available in server environment'));
+      return;
+    }
 
-  // reCAPTCHA functions
-  const executeRecaptcha = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (window.grecaptcha) {
-        window.grecaptcha.ready(() => {
-          window.grecaptcha
-            .execute("6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n", {
-              action: "enquiry_form",
-            })
-            .then((token: string) => {
-              resolve(token);
-            })
-            .catch((error: any) => {
-              reject(error);
-            });
-        });
-      } else {
-        reject(new Error("reCAPTCHA not loaded"));
-      }
-    });
-  };
+    if (!window.grecaptcha) {
+      reject(new Error('reCAPTCHA not loaded. Please refresh the page and try again.'));
+      return;
+    }
+
+    try {
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute('6LdoV_grAAAAAK1Yh6VsQEmi3zk6wWIkLqUtMX-n', {
+            action: 'enquiry_form',
+          })
+          .then((token: string) => {
+            console.log('reCAPTCHA token generated successfully');
+            resolve(token);
+          })
+          .catch((error: any) => {
+            console.error('reCAPTCHA execution error:', error);
+            reject(new Error('Failed to generate security token. Please try again.'));
+          });
+      });
+    } catch (error) {
+      console.error('reCAPTCHA ready error:', error);
+      reject(new Error('Security verification failed. Please refresh the page.'));
+    }
+  });
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
