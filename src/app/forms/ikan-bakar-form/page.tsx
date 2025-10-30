@@ -194,7 +194,7 @@ export default function IkanBakarForm() {
               <p className="text-gray-600 mb-4">Click Video link below</p>
               
               <a 
-                href="https://bit.ly/3zMYzwX" 
+                href="https://alphadigital.my/wp-content/uploads/2022/08/Ikan-Bakar-Video-comp.mp4" 
                 className="inline-flex items-center justify-center bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-semibold"
                 rel="nofollow"
               >
