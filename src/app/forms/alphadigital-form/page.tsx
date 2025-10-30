@@ -207,7 +207,7 @@ export default function AlphaDigitalForm() {
             {/* POS Solutions */}
             <div className="bg-blue-50/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm border border-blue-200/50">
               <a 
-                href="https://form.jotform.com/222124273264448" 
+                href="https://alphadigital.my/retail_restaurant_pos.php" 
                 className="text-blue-600 hover:text-blue-800 underline text-lg sm:text-xl font-bold mb-3 sm:mb-4 block transition-colors"
                 rel="nofollow"
               >
