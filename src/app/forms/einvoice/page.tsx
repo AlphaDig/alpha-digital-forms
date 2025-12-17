@@ -105,7 +105,6 @@ export default function EInvoiceServiceModern() {
                       <span className="text-lg font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">Only</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 mb-8">Cancel anytime • No hidden fees</p>
                 </div>
 
                 {/* Features Grid */}
@@ -138,6 +137,9 @@ export default function EInvoiceServiceModern() {
                     </div>
                   </div>
                 </div>
+
+                {/* CTA Button */}
+              
               </div>
             </div>
 
