@@ -212,16 +212,6 @@ export default function EInvoiceServiceModern() {
         </button>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 z-40">
-        <div className="flex justify-between items-center">
-          <button className="text-blue-600 font-medium text-sm py-2 px-3">Call Now</button>
-          <button className="bg-blue-600 text-white font-medium text-sm py-2 px-4 rounded-full">
-            Get Started
-          </button>
-          <button className="text-blue-600 font-medium text-sm py-2 px-3">Email Us</button>
-        </div>
-      </div>
     </div>
   );
 }
