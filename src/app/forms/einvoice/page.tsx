@@ -14,7 +14,7 @@ export default function EInvoiceServiceModern() {
     {
       icon: <Shield className="w-6 h-6 md:w-8 md:h-8" />,
       title: "Backup Support & Maintenance",
-      description: "24/7 technical support and regular updates"
+      description: ""
     },
     {
       icon: <CloudUpload className="w-6 h-6 md:w-8 md:h-8" />,
