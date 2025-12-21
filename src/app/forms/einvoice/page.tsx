@@ -111,11 +111,7 @@ export default function EInvoiceServiceModern() {
             <div className="max-w-2xl mx-auto mb-10 sm:mb-12 md:mb-16">
               <div className="relative bg-gradient-to-br from-white to-blue-50 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-10 border-2 border-blue-100 shadow-lg">
                 {/* Decorative Corner - Hidden on Mobile */}
-                <div className="hidden sm:block absolute -top-3 -right-3 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl sm:rounded-2xl -rotate-12">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm sm:text-base md:text-lg rotate-12">BEST VALUE</span>
-                  </div>
-                </div>
+               
 
                 <div className="text-center relative z-10">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 mb-4">
