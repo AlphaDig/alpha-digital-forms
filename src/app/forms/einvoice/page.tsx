@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Shield, BarChart3, FileText, CloudUpload, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function EInvoiceServiceModern() {
   const features = [
@@ -63,8 +64,20 @@ export default function EInvoiceServiceModern() {
           <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden">
             <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:10px_10px] sm:bg-[size:15px_15px] md:bg-[size:20px_20px]"></div>
             <div className="relative px-4 sm:px-6 md:px-12 py-8 sm:py-10 md:py-12 text-center">
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white/10 rounded-full backdrop-blur-sm mb-4 sm:mb-5 md:mb-6">
-                <span className="text-2xl sm:text-3xl md:text-3xl font-bold">#</span>
+              {/* Replaced "#" with square image placeholder */}
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/10 rounded-xl sm:rounded-2xl backdrop-blur-sm mb-4 sm:mb-5 md:mb-6 border-2 border-white/20 overflow-hidden">
+                {/* Square image placeholder - replace with your actual image */}
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-white text-2xl sm:text-3xl font-bold">📊</div>
+                  {/* If you have an actual image, use this instead: */}
+                  <Image 
+                    src="/myinvoice-portal.png" 
+                    alt="E-Invoice Icon"
+                    width={80}
+                    height={80}
+                    className="object-cover w-full h-full"
+                  />  
+                </div>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-5 md:mb-6 tracking-tight">
                 E-Invoice Service
@@ -110,7 +123,13 @@ export default function EInvoiceServiceModern() {
                       <span className="text-sm sm:text-base md:text-lg font-bold text-blue-600 bg-blue-100 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full mt-1">Only</span>
                     </div>
                   </div>
-                  <p className="text-gray-500 text-sm sm:text-base mt-2">Cancel anytime • No setup fees</p>
+                  {/* Removed "Cancel anytime" text and added 24/7 support text */}
+                  <div className="mt-4 mb-2">
+                    <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+                      <Shield className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-700">24/7 Support & Maintenance</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Features Grid - Responsive */}
@@ -150,7 +169,13 @@ export default function EInvoiceServiceModern() {
                   </div>
                 </div>
 
-                
+                {/* CTA Button */}
+                <div className="mt-8 sm:mt-10 text-center">
+                  <button className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30">
+                    <span className="relative z-10">Start Your Free Trial Today</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -197,21 +222,18 @@ export default function EInvoiceServiceModern() {
         </div>
       </div>
 
-      {/* Floating Action Button - Responsive */}
+      {/* Floating WhatsApp Button - Responsive */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
-        <button className="group flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95">
+        <Link 
+          href="https://wa.me/+6062849931" 
+          target="_blank"
+          className="group flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+        >
           <span className="text-lg sm:text-xl">💬</span>
-          <Link 
-            href="https://wa.me/+6062849931" 
-            target="_blank"
-            className="text-sm sm:text-base"
-          >
-            Chat on WhatsApp
-          </Link>
+          <span className="text-sm sm:text-base">WhatsApp Now</span>
           <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
-        </button>
+        </Link>
       </div>
-
     </div>
   );
 }
