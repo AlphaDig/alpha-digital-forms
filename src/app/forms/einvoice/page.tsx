@@ -65,18 +65,20 @@ export default function EInvoiceServiceModern() {
             <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:10px_10px] sm:bg-[size:15px_15px] md:bg-[size:20px_20px]"></div>
             <div className="relative px-4 sm:px-6 md:px-12 py-8 sm:py-10 md:py-12 text-center">
               {/* Replaced "#" with square image placeholder */}
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/10 rounded-xl sm:rounded-2xl backdrop-blur-sm mb-4 sm:mb-5 md:mb-6 border-2 border-white/20 overflow-hidden">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white rounded-xl sm:rounded-2xl backdrop-blur-sm mb-4 sm:mb-5 md:mb-6 border-2 border-white/20 overflow-hidden">
                 {/* Square image placeholder - replace with your actual image */}
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-white text-2xl sm:text-3xl font-bold">📊</div>
                   {/* If you have an actual image, use this instead: */}
-                  <Image 
-                    src="/myinvoice-portal.png" 
-                    alt="E-Invoice Icon"
-                    width={80}
-                    height={80}
-                    className="object-cover w-full h-full"
-                  />  
+                  <img 
+            src="/myinvois-portal.png" 
+            alt="Alpha Digital"
+            className="mx-auto w-full max-w-[280px] sm:max-w-[400px] md:max-w-[620px] h-auto"
+            style={{ 
+              height: 'auto',
+              maxHeight: '100px',
+              objectFit: 'contain'
+            }}
+          />
                 </div>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-5 md:mb-6 tracking-tight">
@@ -169,13 +171,6 @@ export default function EInvoiceServiceModern() {
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="mt-8 sm:mt-10 text-center">
-                  <button className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30">
-                    <span className="relative z-10">Start Your Free Trial Today</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -200,27 +195,6 @@ export default function EInvoiceServiceModern() {
         </div>
       </div>
 
-      {/* Stats Bar - Responsive */}
-      <div className="max-w-6xl mx-auto mt-4 sm:mt-6 md:mt-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-gray-200">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">99.9%</div>
-            <div className="text-xs sm:text-sm text-gray-600">Uptime</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-gray-200">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">24/7</div>
-            <div className="text-xs sm:text-sm text-gray-600">Support</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-gray-200">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">LHDN</div>
-            <div className="text-xs sm:text-sm text-gray-600">Compliant</div>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-gray-200">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">500+</div>
-            <div className="text-xs sm:text-sm text-gray-600">Clients</div>
-          </div>
-        </div>
-      </div>
 
       {/* Floating WhatsApp Button - Responsive */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
